@@ -76,10 +76,10 @@ func TestWalletManager_GetAssetsAccountTokenBalance(t *testing.T) {
 	accountID := "CokfTqE8bEYPjPqENsjhu5hc1cTdyUkjWRt2TvRTxy2t"
 	//accountID := "EURz2Yj9nBk1ZJ9NAZii4sTWXSmMEEUVeodBMxQaxmdg"
 	contract := openwallet.SmartContract{
-		Address:  "token.piz:PIZ",
+		Address:  "token.pex:PEX",
 		Protocol: "multiple-token",
-		Symbol:   "PIZ",
-		Name:     "PIZ",
+		Symbol:   "PEX",
+		Name:     "PEX",
 		Decimals: 4,
 	}
 

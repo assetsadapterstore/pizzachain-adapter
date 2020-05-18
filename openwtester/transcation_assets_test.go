@@ -132,9 +132,17 @@ func TestTransfer(t *testing.T) {
 		Decimals: 4,
 	}
 
+	//contract := openwallet.SmartContract{
+	//	Address:  "token.pex:PEX",
+	//	Protocol: "multiple-token",
+	//	Symbol:   "PEX",
+	//	Name:     "PEX",
+	//	Decimals: 4,
+	//}
+
 	testGetAssetsAccountTokenBalance(tm, walletID, accountID, contract)
 
-	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "1.2345", "", "hello boy", &contract)
+	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "2.345", "", "hello boy", &contract)
 	if err != nil {
 		return
 	}

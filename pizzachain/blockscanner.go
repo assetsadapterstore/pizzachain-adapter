@@ -429,7 +429,6 @@ func (bs *PIZBlockScanner) InitExtractResult(sourceKey string, action TransferAc
 	reason := ""
 
 	symbol := data.Quantity.Symbol.Symbol
-	decimals := int32(data.Quantity.Symbol.Precision)
 	amount := common.NewString(data.Quantity.Amount).String()
 	fee := common.NewString(data.Fee.Amount).String()
 
@@ -448,12 +447,11 @@ func (bs *PIZBlockScanner) InitExtractResult(sourceKey string, action TransferAc
 	}
 
 	transx := &openwallet.Transaction{
-		Fees:        fee,
+		//Fees:        fee,
 		Coin:        coin,
 		BlockHash:   result.BlockHash,
 		BlockHeight: result.BlockHeight,
 		TxID:        result.TxID,
-		Decimal:     decimals,
 		Amount:      amount,
 		ConfirmTime: result.BlockTime,
 		From:        []string{data.From + ":" + amount},
@@ -479,6 +477,80 @@ func (bs *PIZBlockScanner) InitExtractResult(sourceKey string, action TransferAc
 	}
 
 	txExtractDataArray = append(txExtractDataArray, txExtractData)
+
+	if optType != 2 {
+		//提取手续费交易单
+		if data.Quantity.Symbol.Symbol == bs.wm.Symbol() {
+			//手续费资产与转账资产相同，添加一个input作为手续费
+
+			transx.Fees = fee
+
+			//:增加手续费input
+			txFee := &openwallet.TxInput{}
+			txFee.Recharge.Sid = openwallet.GenTxInputSID(transx.TxID, bs.wm.Symbol(), coin.ContractID, uint64(1))
+			txFee.Recharge.TxID = transx.TxID
+			txFee.Recharge.Address = data.From
+			txFee.Recharge.Coin = coin
+			txFee.Recharge.Symbol = coin.Symbol
+			txFee.Recharge.BlockHash = transx.BlockHash
+			txFee.Recharge.BlockHeight = transx.BlockHeight
+			txFee.Recharge.Index = 1
+			txFee.Recharge.CreateAt = time.Now().Unix()
+			txFee.Amount = transx.Fees
+			txExtractData.TxInputs = append(txExtractData.TxInputs, txFee)
+
+		} else {
+			//不相同，提取一笔手续费资产交易单
+
+			feeExtractData := &openwallet.TxExtractData{}
+
+			feeSymbol := data.Fee.Symbol.Symbol
+			feeAmount := common.NewString(data.Fee.Amount).String()
+
+			feeContractID := openwallet.GenContractID(bs.wm.Symbol(), FeeAccountName+":"+feeSymbol)
+			feeCoin := openwallet.Coin{
+				Symbol:     bs.wm.Symbol(),
+				IsContract: true,
+				ContractID: feeContractID,
+			}
+
+			feeCoin.Contract = openwallet.SmartContract{
+				Symbol:     bs.wm.Symbol(),
+				ContractID: feeContractID,
+				Address:    FeeAccountName + ":" + feeSymbol,
+				Token:      feeSymbol,
+			}
+
+			feeTransx := &openwallet.Transaction{
+				Fees:        "0",
+				Coin:        feeCoin,
+				BlockHash:   result.BlockHash,
+				BlockHeight: result.BlockHeight,
+				TxID:        result.TxID,
+				Amount:      feeAmount,
+				ConfirmTime: result.BlockTime,
+				From:        []string{data.From + ":" + feeAmount},
+				To:          []string{"fee.piz" + ":" + feeAmount},
+				IsMemo:      true,
+				Status:      status,
+				Reason:      reason,
+			}
+
+			feeTransx.SetExtParam("memo", "transfer fee")
+
+			feeWxID := openwallet.GenTransactionWxID(feeTransx)
+			feeTransx.WxID = feeWxID
+
+			feeExtractData.Transaction = feeTransx
+
+			//添加一个input
+			bs.extractTxInput(action, feeExtractData)
+
+			txExtractDataArray = append(txExtractDataArray, feeExtractData)
+		}
+	}
+
+
 	result.extractData[sourceKey] = txExtractDataArray
 }
 
@@ -505,13 +577,6 @@ func (bs *PIZBlockScanner) extractTxInput(action TransferAction, txExtractData *
 	txInput.Recharge.CreateAt = time.Now().Unix()
 	txExtractData.TxInputs = append(txExtractData.TxInputs, txInput)
 
-
-	//:增加手续费input
-	txFee := *txInput
-	txFee.Recharge.Sid = openwallet.GenTxInputSID(tx.TxID, bs.wm.Symbol(), coin.ContractID, uint64(1))
-	txFee.Recharge.Index = 1
-	txFee.Amount = tx.Fees
-	txExtractData.TxInputs = append(txExtractData.TxInputs, &txFee)
 }
 
 //extractTxOutput 提取交易单输入部分,只有一个TxOutPut

@@ -428,7 +428,6 @@ func (decoder *TransactionDecoder) createRawTransaction(
 		keySignList      = make([]*openwallet.KeySignature, 0)
 		accountID        = rawTx.Account.AccountID
 		amountDec        = decimal.Zero
-		codeAccount      = eos.AccountName(rawTx.Coin.Contract.Address)
 	)
 
 	for k, v := range rawTx.To {
@@ -441,6 +440,13 @@ func (decoder *TransactionDecoder) createRawTransaction(
 	if err := txOpts.FillFromChain(decoder.wm.Api); err != nil {
 		return openwallet.Errorf(openwallet.ErrCreateRawTransactionFailed, "filling tx opts: %s", err)
 	}
+
+	contractAddress := strings.Split(rawTx.Coin.Contract.Address, ":")
+	if len(rawTx.Coin.Contract.Address) == 0 {
+		return openwallet.Errorf(openwallet.ErrCreateRawTransactionFailed, "contract address: %s is invalid", rawTx.Coin.Contract.Address)
+	}
+
+	codeAccount := eos.AccountName(contractAddress[0])
 
 	//action := &eos.Action{
 	//	Account: codeAccount,
@@ -456,12 +462,12 @@ func (decoder *TransactionDecoder) createRawTransaction(
 	//	}),
 	//}
 
-	feeAsset := eos.Asset{
-		Amount: eos.Int64(fee.Shift(int32(quantity.Precision)).IntPart()),
-		Symbol: quantity.Symbol,
-	}
-	
-	action := NewTransfer(accountResp.AccountName, to, quantity, memo, feeAsset)
+	//feeAsset := eos.Asset{
+	//	Amount: eos.Int64(fee.Shift(int32(quantity.Precision)).IntPart()),
+	//	Symbol: quantity.Symbol,
+	//}
+
+	action := NewTransfer(accountResp.AccountName, to, quantity, memo, FeeAsset)
 	if codeAccount != action.Account {
 		action.Account = codeAccount
 	}

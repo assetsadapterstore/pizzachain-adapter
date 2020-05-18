@@ -18,6 +18,7 @@ package pizzachain
 import (
 	"github.com/blocktree/go-owcrypt"
 	"github.com/blocktree/openwallet/v2/common/file"
+	"github.com/eoscanada/eos-go"
 	"github.com/shopspring/decimal"
 	"path/filepath"
 	"strings"
@@ -29,8 +30,15 @@ const (
 
 var (
 	//币种
-	Symbol = "PIZ"
-	FixFee = decimal.New(2, 0)
+	Symbol   = "PIZ"
+	FeeAccountName = "token.piz"
+	FeeDecimal = uint8(4)
+	FixFee   = decimal.New(2, 0)
+	FeeAsset = eos.Asset{
+		Amount: eos.Int64(20000),
+		Symbol: eos.Symbol{Precision: FeeDecimal, Symbol: Symbol},
+	}
+
 )
 
 type WalletConfig struct {

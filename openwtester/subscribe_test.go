@@ -121,7 +121,7 @@ func TestSubscribeAddress_PIZ(t *testing.T) {
 		scanner.SetBlockchainDAI(dai)
 	}
 
-	scanner.SetRescanBlockHeight(2052532)
+	scanner.SetRescanBlockHeight(3503907)
 
 	if scanner == nil {
 		log.Error(symbol, "is not support block scan")
