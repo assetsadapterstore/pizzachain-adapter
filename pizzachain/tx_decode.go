@@ -375,6 +375,10 @@ func (decoder *TransactionDecoder) CreateSummaryRawTransactionWithError(wrapper 
 	//计算汇总数量 = 余额 - 保留余额
 	sumAmount := accountBalanceDec.Sub(retainedBalance).Sub(FixFee)
 
+	if sumAmount.LessThanOrEqual(decimal.Zero) {
+		return rawTxArray, nil
+	}
+
 	amountInt64 := sumAmount.Shift(int32(accountBalance.Precision)).IntPart()
 	quantity := eos.Asset{Amount: eos.Int64(amountInt64), Symbol: accountBalance.Symbol}
 	memo := sumRawTx.GetExtParam().Get("memo").String()

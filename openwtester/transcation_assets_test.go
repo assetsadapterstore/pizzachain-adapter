@@ -124,25 +124,25 @@ func TestTransfer(t *testing.T) {
 	accountID := "CokfTqE8bEYPjPqENsjhu5hc1cTdyUkjWRt2TvRTxy2t"
 	to := "pizopenw3333"
 
-	contract := openwallet.SmartContract{
-		Address:  "token.piz:PIZ",
-		Protocol: "multiple-token",
-		Symbol:   "PIZ",
-		Name:     "PIZ",
-		Decimals: 4,
-	}
-
 	//contract := openwallet.SmartContract{
-	//	Address:  "token.pex:PEX",
+	//	Address:  "token.piz:PIZ",
 	//	Protocol: "multiple-token",
-	//	Symbol:   "PEX",
-	//	Name:     "PEX",
+	//	Symbol:   "PIZ",
+	//	Name:     "PIZ",
 	//	Decimals: 4,
 	//}
 
+	contract := openwallet.SmartContract{
+		Address:  "token.pex:PEX",
+		Protocol: "multiple-token",
+		Symbol:   "PEX",
+		Name:     "PEX",
+		Decimals: 4,
+	}
+
 	testGetAssetsAccountTokenBalance(tm, walletID, accountID, contract)
 
-	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "2.345", "", "hello boy", &contract)
+	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "20.345", "", "hello boy", &contract)
 	if err != nil {
 		return
 	}
@@ -180,10 +180,18 @@ func TestSummary(t *testing.T) {
 		Decimals: 4,
 	}
 
+	//contract := openwallet.SmartContract{
+	//	Address:  "token.pex:PEX",
+	//	Protocol: "multiple-token",
+	//	Symbol:   "PEX",
+	//	Name:     "PEX",
+	//	Decimals: 4,
+	//}
+
 	testGetAssetsAccountTokenBalance(tm, walletID, accountID, contract)
 
 	rawTxArray, err := testCreateSummaryTransactionStep(tm, walletID, accountID,
-		summaryAddress, "", "", "",
+		summaryAddress, "10", "10", "",
 		0, 100, &contract)
 	if err != nil {
 		log.Errorf("CreateSummaryTransaction failed, unexpected error: %v", err)
